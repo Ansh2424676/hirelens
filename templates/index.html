@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireLens - Resume Parser</title>
+</head>
+<body>
+    <main>
+        <h1>HireLens</h1>
+        <p>AI Resume Analyzer & Job Match Assistant</p>
+
+        <h2>Resume Parser</h2>
+
+        <form action="/upload-resume" method="POST" enctype="multipart/form-data">
+            <input
+                type="file"
+                name="resume"
+                accept=".pdf,.docx"
+                required
+            >
+            <button type="submit">Upload Resume</button>
+        </form>
+
+        {% if error %}
+            <div>
+                <h3>Error</h3>
+                <p>{{ error }}</p>
+            </div>
+        {% endif %}
+
+        {% if extracted_text %}
+            <div>
+                <h3>Extracted Resume Text</h3>
+                <pre>{{ extracted_text }}</pre>
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>
