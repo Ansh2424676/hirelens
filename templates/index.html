@@ -3,38 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HireLens - Resume Parser</title>
+
+    <title>HireLens - Resume Analyzer</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        h2 {
+            margin-top: 28px;
+            color: #374151;
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+
+        .form-section {
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"],
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        textarea {
+            min-height: 260px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        button {
+            margin-top: 16px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .help-text {
+            margin-top: 8px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .success {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .keyword-section {
+            margin-top: 28px;
+            padding: 20px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .keyword-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0;
+            margin: 12px 0 0;
+            list-style: none;
+        }
+
+        .keyword-list li {
+            padding: 7px 11px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            font-size: 14px;
+        }
+
+        .no-keywords {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
+
 <body>
     <main>
         <h1>HireLens</h1>
-        <p>AI Resume Analyzer & Job Match Assistant</p>
+
+        <p>
+            AI Resume Analyzer &amp; Job Match Assistant
+        </p>
 
         <h2>Resume Parser</h2>
 
-        <form action="/upload-resume" method="POST" enctype="multipart/form-data">
-            <input
-                type="file"
-                name="resume"
-                accept=".pdf,.docx"
-                required
-            >
-            <button type="submit">Upload Resume</button>
+        <form
+            action="/upload-resume"
+            method="POST"
+            enctype="multipart/form-data"
+            id="analysisForm"
+        >
+            <div class="form-section">
+                <label for="resume">
+                    Upload Resume
+                </label>
+
+                <input
+                    type="file"
+                    id="resume"
+                    name="resume"
+                    accept=".pdf,.docx"
+                    required
+                >
+
+                <p class="help-text">
+                    Supported formats: PDF and DOCX
+                </p>
+            </div>
+
+            <div class="form-section">
+                <label for="job_description">
+                    Job Description
+                </label>
+
+                <textarea
+                    id="job_description"
+                    name="job_description"
+                    minlength="100"
+                    required
+                    placeholder="Paste the complete job description here. Include responsibilities, required skills, qualifications, tools, technologies, and experience requirements..."
+                >{{ job_description|default("") }}</textarea>
+
+                <p class="help-text">
+                    Please enter at least 100 characters.
+                </p>
+
+                <div
+                    id="jdError"
+                    class="error"
+                    role="alert"
+                    style="display: none;"
+                >
+                    Your job description is too short.
+                    Please enter at least 100 characters.
+                </div>
+            </div>
+
+            <button type="submit">
+                Upload Resume &amp; Analyze Job Description
+            </button>
         </form>
 
         {% if error %}
-            <div>
+            <div class="error">
                 <h3>Error</h3>
                 <p>{{ error }}</p>
             </div>
         {% endif %}
 
         {% if extracted_text %}
-            <div>
-                <h3>Extracted Resume Text</h3>
-                <pre>{{ extracted_text }}</pre>
+            <div class="success">
+                <h3>Resume Uploaded Successfully</h3>
+                <p>
+                    Resume text was extracted and keywords were detected.
+                </p>
             </div>
+
+            <div class="keyword-section">
+                <h2>Extracted Resume Keywords</h2>
+
+                {% if resume_keywords %}
+                    <ul class="keyword-list">
+                        {% for keyword in resume_keywords %}
+                            <li>{{ keyword }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-keywords">
+                        No dictionary skills were detected in the resume.
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="keyword-section">
+                <h2>Extracted Job Description Keywords</h2>
+
+                {% if jd_keywords %}
+                    <ul class="keyword-list">
+                        {% for keyword in jd_keywords %}
+                            <li>{{ keyword }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-keywords">
+                        No dictionary skills were detected in the job description.
+                    </p>
+                {% endif %}
+            </div>
+
+            <h2>Extracted Resume Text</h2>
+
+            <pre>{{ extracted_text }}</pre>
         {% endif %}
     </main>
+
+    <script>
+        const form = document.getElementById("analysisForm");
+        const jobDescription = document.getElementById("job_description");
+        const jdError = document.getElementById("jdError");
+
+        form.addEventListener("submit", function (event) {
+            const text = jobDescription.value.trim();
+
+            if (text.length < 100) {
+                event.preventDefault();
+
+                jdError.style.display = "block";
+                jobDescription.focus();
+
+                return;
+            }
+
+            jdError.style.display = "none";
+        });
+
+        jobDescription.addEventListener("input", function () {
+            const text = jobDescription.value.trim();
+
+            if (text.length >= 100) {
+                jdError.style.display = "none";
+            }
+        });
+    </script>
 </body>
 </html>

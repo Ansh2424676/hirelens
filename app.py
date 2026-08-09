@@ -4,11 +4,14 @@ import tempfile
 from flask import Flask, render_template, request
 
 from parsing import parse_resume
+from scoring.keyword_extractor import extract_keywords
+
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
 ALLOWED_EXTENSIONS = {".pdf", ".docx"}
+MIN_JD_LENGTH = 100
 
 
 @app.route("/")
@@ -24,11 +27,32 @@ def health():
 @app.route("/upload-resume", methods=["POST"])
 def upload_resume():
     uploaded_file = request.files.get("resume")
+    job_description = request.form.get("job_description", "").strip()
 
+    # Server-side Job Description validation
+    if not job_description:
+        return render_template(
+            "index.html",
+            error="Please enter a job description.",
+            job_description=job_description
+        )
+
+    if len(job_description) < MIN_JD_LENGTH:
+        return render_template(
+            "index.html",
+            error=(
+                "Job description is too short. "
+                "Please enter at least 100 characters."
+            ),
+            job_description=job_description
+        )
+
+    # Resume validation
     if not uploaded_file or not uploaded_file.filename:
         return render_template(
             "index.html",
-            error="Please select a resume file."
+            error="Please select a resume file.",
+            job_description=job_description
         )
 
     extension = Path(uploaded_file.filename).suffix.lower()
@@ -36,9 +60,11 @@ def upload_resume():
     if extension not in ALLOWED_EXTENSIONS:
         return render_template(
             "index.html",
-            error="Invalid file type. Please upload a PDF or DOCX resume."
+            error="Invalid file type. Please upload a PDF or DOCX resume.",
+            job_description=job_description
         )
 
+    # Save uploaded resume temporarily
     with tempfile.NamedTemporaryFile(
         suffix=extension,
         delete=False
@@ -46,19 +72,31 @@ def upload_resume():
         uploaded_file.save(temp_file.name)
         temp_path = temp_file.name
 
-    result = parse_resume(temp_path, extension)
-
-    Path(temp_path).unlink(missing_ok=True)
+    try:
+        # Existing Day 3 resume parsing flow
+        result = parse_resume(temp_path, extension)
+    finally:
+        Path(temp_path).unlink(missing_ok=True)
 
     if not result["success"]:
         return render_template(
             "index.html",
-            error=result["error"]
+            error=result["error"],
+            job_description=job_description
         )
+
+    resume_text = result["raw_text"]
+
+    # Day 4 keyword extraction
+    resume_keywords = extract_keywords(resume_text)
+    jd_keywords = extract_keywords(job_description)
 
     return render_template(
         "index.html",
-        extracted_text=result["raw_text"]
+        extracted_text=resume_text,
+        resume_keywords=sorted(resume_keywords),
+        jd_keywords=sorted(jd_keywords),
+        job_description=job_description
     )
 
 
