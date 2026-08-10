@@ -4,7 +4,7 @@ import tempfile
 from flask import Flask, render_template, request
 
 from parsing import parse_resume
-from scoring.keyword_extractor import extract_keywords
+from scoring.engine import analyze
 
 
 app = Flask(__name__)
@@ -27,14 +27,17 @@ def health():
 @app.route("/upload-resume", methods=["POST"])
 def upload_resume():
     uploaded_file = request.files.get("resume")
-    job_description = request.form.get("job_description", "").strip()
+    job_description = request.form.get(
+        "job_description",
+        ""
+    ).strip()
 
     # Server-side Job Description validation
     if not job_description:
         return render_template(
             "index.html",
             error="Please enter a job description.",
-            job_description=job_description
+            job_description=job_description,
         )
 
     if len(job_description) < MIN_JD_LENGTH:
@@ -44,7 +47,7 @@ def upload_resume():
                 "Job description is too short. "
                 "Please enter at least 100 characters."
             ),
-            job_description=job_description
+            job_description=job_description,
         )
 
     # Resume validation
@@ -52,51 +55,62 @@ def upload_resume():
         return render_template(
             "index.html",
             error="Please select a resume file.",
-            job_description=job_description
+            job_description=job_description,
         )
 
-    extension = Path(uploaded_file.filename).suffix.lower()
+    extension = Path(
+        uploaded_file.filename
+    ).suffix.lower()
 
     if extension not in ALLOWED_EXTENSIONS:
         return render_template(
             "index.html",
-            error="Invalid file type. Please upload a PDF or DOCX resume.",
-            job_description=job_description
+            error=(
+                "Invalid file type. "
+                "Please upload a PDF or DOCX resume."
+            ),
+            job_description=job_description,
         )
 
     # Save uploaded resume temporarily
     with tempfile.NamedTemporaryFile(
         suffix=extension,
-        delete=False
+        delete=False,
     ) as temp_file:
         uploaded_file.save(temp_file.name)
         temp_path = temp_file.name
 
     try:
         # Existing Day 3 resume parsing flow
-        result = parse_resume(temp_path, extension)
+        result = parse_resume(
+            temp_path,
+            extension,
+        )
     finally:
-        Path(temp_path).unlink(missing_ok=True)
+        Path(temp_path).unlink(
+            missing_ok=True
+        )
 
     if not result["success"]:
         return render_template(
             "index.html",
             error=result["error"],
-            job_description=job_description
+            job_description=job_description,
         )
 
     resume_text = result["raw_text"]
 
-    # Day 4 keyword extraction
-    resume_keywords = extract_keywords(resume_text)
-    jd_keywords = extract_keywords(job_description)
+    # Day 5 rule-based scoring engine
+    analysis = analyze(
+        resume_text,
+        job_description,
+    )
 
     return render_template(
         "index.html",
         extracted_text=resume_text,
-        resume_keywords=sorted(resume_keywords),
-        jd_keywords=sorted(jd_keywords),
-        job_description=job_description
+        analysis=analysis,
+        job_description=job_description,
     )
 
 
@@ -104,7 +118,10 @@ def upload_resume():
 def file_too_large(_error):
     return render_template(
         "index.html",
-        error="File is too large. Maximum allowed size is 5 MB."
+        error=(
+            "File is too large. "
+            "Maximum allowed size is 5 MB."
+        ),
     ), 413
 
 
