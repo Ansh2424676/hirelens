@@ -1,10 +1,15 @@
 from pathlib import Path
 import tempfile
 
+from dotenv import load_dotenv
 from flask import Flask, render_template, request
 
+from ai_service.claude_provider import ClaudeProvider
 from parsing import parse_resume
 from scoring.engine import analyze
+
+
+load_dotenv()
 
 
 app = Flask(__name__)
@@ -29,7 +34,7 @@ def upload_resume():
     uploaded_file = request.files.get("resume")
     job_description = request.form.get(
         "job_description",
-        ""
+        "",
     ).strip()
 
     # Server-side Job Description validation
@@ -106,10 +111,20 @@ def upload_resume():
         job_description,
     )
 
+    # Day 6 Claude AI suggestion layer
+    claude_provider = ClaudeProvider()
+
+    ai_suggestions = claude_provider.generate_suggestions(
+        resume_text=resume_text,
+        jd_text=job_description,
+        analysis=analysis,
+    )
+
     return render_template(
         "index.html",
         extracted_text=resume_text,
         analysis=analysis,
+        ai_suggestions=ai_suggestions,
         job_description=job_description,
     )
 

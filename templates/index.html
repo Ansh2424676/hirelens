@@ -160,7 +160,7 @@
             overflow-y: auto;
         }
 
-        /* --- Day 5: Scoring dashboard styles --- */
+        /* Day 5: Scoring dashboard styles */
 
         .score-cards {
             display: flex;
@@ -191,9 +191,17 @@
             font-size: 14px;
         }
 
-        .score-good .score-value { color: #16a34a; }
-        .score-medium .score-value { color: #d97706; }
-        .score-low .score-value { color: #dc2626; }
+        .score-good .score-value {
+            color: #16a34a;
+        }
+
+        .score-medium .score-value {
+            color: #d97706;
+        }
+
+        .score-low .score-value {
+            color: #dc2626;
+        }
 
         .breakdown-table {
             width: 100%;
@@ -221,10 +229,100 @@
         .missing-category:first-child {
             margin-top: 0;
         }
+
+        /* Day 6: AI suggestions */
+
+        .ai-suggestions {
+            margin-top: 32px;
+        }
+
+        .ai-suggestions .ai-intro {
+            margin-bottom: 20px;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .ai-suggestions .suggestion-block {
+            margin-top: 16px;
+            padding: 18px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .ai-suggestions .suggestion-block:first-child {
+            margin-top: 0;
+        }
+
+        .ai-suggestions .suggestion-block p {
+            line-height: 1.6;
+        }
+
+        .ai-suggestions .suggestion-block ul {
+            margin-bottom: 0;
+            padding-left: 22px;
+        }
+
+        .ai-suggestions .suggestion-block li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .improvement-card {
+            margin-top: 14px;
+            padding: 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .improvement-card:first-child {
+            margin-top: 0;
+        }
+
+        .improvement-card p {
+            margin: 8px 0;
+        }
+
+        .improvement-card strong {
+            color: #374151;
+        }
+
+        /* Day 6: Application footer */
+
+        .app-footer {
+            max-width: 900px;
+            margin: 24px auto 0;
+            padding: 16px 20px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            main {
+                padding: 22px;
+            }
+
+            .score-card {
+                min-width: 100%;
+            }
+
+            .breakdown-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 
 <body>
+
     <main>
         <h1>HireLens</h1>
 
@@ -310,20 +408,31 @@
 
             <div class="score-cards">
                 {% set ats = analysis.ats_score.score %}
+
                 <div class="score-card {% if ats >= 70 %}score-good{% elif ats >= 40 %}score-medium{% else %}score-low{% endif %}">
                     <div class="score-value">{{ ats }}</div>
-                    <div class="score-label">ATS Compatibility Score</div>
+                    <div class="score-label">
+                        ATS Compatibility Score
+                    </div>
                 </div>
 
                 {% set match = analysis.match_score.match_percent %}
+
                 <div class="score-card {% if match >= 70 %}score-good{% elif match >= 40 %}score-medium{% else %}score-low{% endif %}">
                     <div class="score-value">{{ match }}%</div>
-                    <div class="score-label">Resume-to-JD Match</div>
+                    <div class="score-label">
+                        Resume-to-JD Match
+                    </div>
                 </div>
 
                 <div class="score-card {% if analysis.missing_skills.total_missing == 0 %}score-good{% elif analysis.missing_skills.total_missing <= 4 %}score-medium{% else %}score-low{% endif %}">
-                    <div class="score-value">{{ analysis.missing_skills.total_missing }}</div>
-                    <div class="score-label">Missing Skills Detected</div>
+                    <div class="score-value">
+                        {{ analysis.missing_skills.total_missing }}
+                    </div>
+
+                    <div class="score-label">
+                        Missing Skills Detected
+                    </div>
                 </div>
             </div>
 
@@ -337,11 +446,14 @@
                         <th>Note</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for item in analysis.ats_score.breakdown %}
                         <tr>
                             <td>{{ item.factor }}</td>
-                            <td>{{ item.points }} / {{ item.max_points }}</td>
+                            <td>
+                                {{ item.points }} / {{ item.max_points }}
+                            </td>
                             <td>{{ item.note }}</td>
                         </tr>
                     {% endfor %}
@@ -354,17 +466,20 @@
                 {% for category, skills in analysis.missing_skills.missing_by_category.items() %}
                     <div class="missing-category">
                         <h4>{{ category.replace("_", " ") }}</h4>
+
                         <ul class="keyword-list">
                             {% for skill in skills %}
-                                <li class="missing">{{ skill }}</li>
+                                <li class="missing">
+                                    {{ skill }}
+                                </li>
                             {% endfor %}
                         </ul>
                     </div>
                 {% endfor %}
             {% else %}
                 <p class="no-keywords">
-                    No missing skills detected — the resume covers every dictionary
-                    skill found in the job description.
+                    No missing skills detected — the resume covers every
+                    dictionary skill found in the job description.
                 </p>
             {% endif %}
 
@@ -374,7 +489,9 @@
                 {% if analysis.match_score.matched_keywords %}
                     <ul class="keyword-list">
                         {% for keyword in analysis.match_score.matched_keywords %}
-                            <li class="matched">{{ keyword }}</li>
+                            <li class="matched">
+                                {{ keyword }}
+                            </li>
                         {% endfor %}
                     </ul>
                 {% else %}
@@ -419,8 +536,141 @@
             <h2>Extracted Resume Text</h2>
 
             <pre>{{ extracted_text }}</pre>
+
+            <!-- Day 6: AI Suggestions -->
+
+            <section class="ai-suggestions">
+                <h2>AI-Powered Improvement Suggestions</h2>
+
+                {% if ai_suggestions and ai_suggestions.error %}
+                    <div class="error">
+                        <h3>AI Suggestions Unavailable</h3>
+
+                        <p>
+                            {{ ai_suggestions.error }}
+                        </p>
+
+                        <p>
+                            Your resume parsing and rule-based scoring
+                            results are still available above.
+                        </p>
+                    </div>
+
+                {% elif ai_suggestions %}
+
+                    <p class="ai-intro">
+                        These suggestions are based on your resume,
+                        job description, and HireLens rule-based analysis.
+                    </p>
+
+                    <div class="suggestion-block">
+                        <h3>Overall Feedback</h3>
+
+                        <p>
+                            {{ ai_suggestions.overall_feedback }}
+                        </p>
+                    </div>
+
+                    <div class="suggestion-block">
+                        <h3>Strengths</h3>
+
+                        {% if ai_suggestions.strengths %}
+                            <ul>
+                                {% for strength in ai_suggestions.strengths %}
+                                    <li>{{ strength }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="no-keywords">
+                                No specific strengths were returned.
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="suggestion-block">
+                        <h3>Priority Improvements</h3>
+
+                        {% if ai_suggestions.priority_improvements %}
+
+                            {% for improvement in ai_suggestions.priority_improvements %}
+                                <div class="improvement-card">
+
+                                    <h4>
+                                        {{ improvement.area }}
+                                    </h4>
+
+                                    <p>
+                                        <strong>Suggestion:</strong>
+                                        {{ improvement.suggestion }}
+                                    </p>
+
+                                    <p>
+                                        <strong>Example:</strong>
+                                        {{ improvement.example }}
+                                    </p>
+
+                                </div>
+                            {% endfor %}
+
+                        {% else %}
+                            <p class="no-keywords">
+                                No priority improvements were returned.
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="suggestion-block">
+                        <h3>Skills to Highlight</h3>
+
+                        {% if ai_suggestions.skills_to_highlight %}
+
+                            <ul class="keyword-list">
+                                {% for skill in ai_suggestions.skills_to_highlight %}
+                                    <li class="matched">
+                                        {{ skill }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+
+                        {% else %}
+                            <p class="no-keywords">
+                                No additional skills were highlighted.
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="suggestion-block">
+                        <h3>Tone Notes</h3>
+
+                        <p>
+                            {{ ai_suggestions.tone_notes }}
+                        </p>
+                    </div>
+
+                {% else %}
+
+                    <div class="error">
+                        <h3>AI Suggestions Unavailable</h3>
+
+                        <p>
+                            AI suggestions temporarily unavailable.
+                        </p>
+
+                        <p>
+                            Your resume parsing and rule-based scoring
+                            results are still available above.
+                        </p>
+                    </div>
+
+                {% endif %}
+            </section>
+
         {% endif %}
     </main>
+
+    <footer class="app-footer">
+        Built with Claude as part of the AB Talks 60-Day Claude AI Challenge.
+    </footer>
 
     <script>
         const form = document.getElementById("analysisForm");
@@ -450,5 +700,6 @@
             }
         });
     </script>
+
 </body>
 </html>
