@@ -8,9 +8,7 @@ from ai_service.claude_provider import ClaudeProvider
 from parsing import parse_resume
 from scoring.engine import analyze
 
-
 load_dotenv()
-
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
@@ -37,7 +35,6 @@ def upload_resume():
         "",
     ).strip()
 
-    # Server-side Job Description validation
     if not job_description:
         return render_template(
             "index.html",
@@ -55,7 +52,6 @@ def upload_resume():
             job_description=job_description,
         )
 
-    # Resume validation
     if not uploaded_file or not uploaded_file.filename:
         return render_template(
             "index.html",
@@ -63,9 +59,7 @@ def upload_resume():
             job_description=job_description,
         )
 
-    extension = Path(
-        uploaded_file.filename
-    ).suffix.lower()
+    extension = Path(uploaded_file.filename).suffix.lower()
 
     if extension not in ALLOWED_EXTENSIONS:
         return render_template(
@@ -77,7 +71,6 @@ def upload_resume():
             job_description=job_description,
         )
 
-    # Save uploaded resume temporarily
     with tempfile.NamedTemporaryFile(
         suffix=extension,
         delete=False,
@@ -86,7 +79,6 @@ def upload_resume():
         temp_path = temp_file.name
 
     try:
-        # Existing Day 3 resume parsing flow
         result = parse_resume(
             temp_path,
             extension,
@@ -105,13 +97,11 @@ def upload_resume():
 
     resume_text = result["raw_text"]
 
-    # Day 5 rule-based scoring engine
     analysis = analyze(
         resume_text,
         job_description,
     )
 
-    # Day 6 Claude AI suggestion layer
     claude_provider = ClaudeProvider()
 
     ai_suggestions = claude_provider.generate_suggestions(
@@ -121,7 +111,7 @@ def upload_resume():
     )
 
     return render_template(
-        "index.html",
+        "results.html",
         extracted_text=resume_text,
         analysis=analysis,
         ai_suggestions=ai_suggestions,

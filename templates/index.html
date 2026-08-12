@@ -3,703 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>HireLens - Resume Analyzer</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 40px 20px;
-            background: #f5f7fb;
-            color: #1f2937;
-        }
-
-        main {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            padding: 32px;
-            border-radius: 12px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-        }
-
-        h1 {
-            margin-top: 0;
-            color: #111827;
-        }
-
-        h2 {
-            margin-top: 28px;
-            color: #374151;
-        }
-
-        h3 {
-            margin-top: 0;
-        }
-
-        h4 {
-            margin: 0 0 8px;
-            color: #374151;
-            text-transform: capitalize;
-        }
-
-        .form-section {
-            margin-bottom: 28px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        input[type="file"],
-        textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 15px;
-        }
-
-        textarea {
-            min-height: 260px;
-            resize: vertical;
-            line-height: 1.5;
-        }
-
-        button {
-            margin-top: 16px;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            background: #2563eb;
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #1d4ed8;
-        }
-
-        .help-text {
-            margin-top: 8px;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .error {
-            margin-top: 20px;
-            padding: 14px;
-            border-radius: 8px;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-        }
-
-        .success {
-            margin-top: 20px;
-            padding: 14px;
-            border-radius: 8px;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-        }
-
-        .keyword-section {
-            margin-top: 28px;
-            padding: 20px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-        }
-
-        .keyword-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 0;
-            margin: 12px 0 0;
-            list-style: none;
-        }
-
-        .keyword-list li {
-            padding: 7px 11px;
-            background: #e5e7eb;
-            border-radius: 999px;
-            font-size: 14px;
-        }
-
-        .keyword-list li.matched {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .keyword-list li.missing {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .no-keywords {
-            color: #6b7280;
-            font-style: italic;
-        }
-
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            background: #f9fafb;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        /* Day 5: Scoring dashboard styles */
-
-        .score-cards {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
-        .score-card {
-            flex: 1;
-            min-width: 220px;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
-            background: #f9fafb;
-            text-align: center;
-        }
-
-        .score-card .score-value {
-            font-size: 40px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .score-card .score-label {
-            margin-top: 6px;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .score-good .score-value {
-            color: #16a34a;
-        }
-
-        .score-medium .score-value {
-            color: #d97706;
-        }
-
-        .score-low .score-value {
-            color: #dc2626;
-        }
-
-        .breakdown-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-            font-size: 14px;
-        }
-
-        .breakdown-table th,
-        .breakdown-table td {
-            text-align: left;
-            padding: 10px 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .breakdown-table th {
-            background: #f3f4f6;
-            color: #374151;
-        }
-
-        .missing-category {
-            margin-top: 16px;
-        }
-
-        .missing-category:first-child {
-            margin-top: 0;
-        }
-
-        /* Day 6: AI suggestions */
-
-        .ai-suggestions {
-            margin-top: 32px;
-        }
-
-        .ai-suggestions .ai-intro {
-            margin-bottom: 20px;
-            color: #4b5563;
-            line-height: 1.6;
-        }
-
-        .ai-suggestions .suggestion-block {
-            margin-top: 16px;
-            padding: 18px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-        }
-
-        .ai-suggestions .suggestion-block:first-child {
-            margin-top: 0;
-        }
-
-        .ai-suggestions .suggestion-block p {
-            line-height: 1.6;
-        }
-
-        .ai-suggestions .suggestion-block ul {
-            margin-bottom: 0;
-            padding-left: 22px;
-        }
-
-        .ai-suggestions .suggestion-block li {
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-
-        .improvement-card {
-            margin-top: 14px;
-            padding: 16px;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-        }
-
-        .improvement-card:first-child {
-            margin-top: 0;
-        }
-
-        .improvement-card p {
-            margin: 8px 0;
-        }
-
-        .improvement-card strong {
-            color: #374151;
-        }
-
-        /* Day 6: Application footer */
-
-        .app-footer {
-            max-width: 900px;
-            margin: 24px auto 0;
-            padding: 16px 20px;
-            text-align: center;
-            color: #6b7280;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        @media (max-width: 640px) {
-            body {
-                padding: 20px 12px;
-            }
-
-            main {
-                padding: 22px;
-            }
-
-            .score-card {
-                min-width: 100%;
-            }
-
-            .breakdown-table {
-                display: block;
-                overflow-x: auto;
-            }
-        }
-    </style>
+    <meta name="description" content="HireLens analyzes resumes against job descriptions and highlights ATS compatibility, missing skills, keywords, and improvement opportunities.">
+    <title>HireLens — Resume Intelligence</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
+<body class="page-shell">
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="/" aria-label="HireLens home">
+                <span class="brand-mark" aria-hidden="true">H</span>
+                <span>
+                    <strong>HireLens</strong>
+                    <small>Resume Intelligence</small>
+                </span>
+            </a>
+            <span class="header-badge">AI-powered career analysis</span>
+        </div>
+    </header>
 
-<body>
-
-    <main>
-        <h1>HireLens</h1>
-
-        <p>
-            AI Resume Analyzer &amp; Job Match Assistant
-        </p>
-
-        <h2>Resume Parser</h2>
-
-        <form
-            action="/upload-resume"
-            method="POST"
-            enctype="multipart/form-data"
-            id="analysisForm"
-        >
-            <div class="form-section">
-                <label for="resume">
-                    Upload Resume
-                </label>
-
-                <input
-                    type="file"
-                    id="resume"
-                    name="resume"
-                    accept=".pdf,.docx"
-                    required
-                >
-
-                <p class="help-text">
-                    Supported formats: PDF and DOCX
+    <main class="container main-content">
+        <section class="hero">
+            <div class="hero-copy">
+                <span class="eyebrow">RESUME → JOB MATCH</span>
+                <h1>Turn your resume into a clear action plan.</h1>
+                <p>
+                    Upload your resume and compare it with a target job description
+                    to uncover ATS compatibility, skill gaps, keyword matches, and
+                    practical improvement opportunities.
                 </p>
             </div>
-
-            <div class="form-section">
-                <label for="job_description">
-                    Job Description
-                </label>
-
-                <textarea
-                    id="job_description"
-                    name="job_description"
-                    minlength="100"
-                    required
-                    placeholder="Paste the complete job description here. Include responsibilities, required skills, qualifications, tools, technologies, and experience requirements..."
-                >{{ job_description|default("") }}</textarea>
-
-                <p class="help-text">
-                    Please enter at least 100 characters.
-                </p>
-
-                <div
-                    id="jdError"
-                    class="error"
-                    role="alert"
-                    style="display: none;"
-                >
-                    Your job description is too short.
-                    Please enter at least 100 characters.
-                </div>
-            </div>
-
-            <button type="submit">
-                Upload Resume &amp; Analyze Job Description
-            </button>
-        </form>
+        </section>
 
         {% if error %}
-            <div class="error">
-                <h3>Error</h3>
+        <section class="alert alert-error" role="alert" aria-live="polite">
+            <span class="alert-icon" aria-hidden="true">!</span>
+            <div>
+                <strong>We couldn't complete the analysis.</strong>
                 <p>{{ error }}</p>
             </div>
+        </section>
         {% endif %}
 
-        {% if analysis %}
-            <div class="success">
-                <h3>Analysis Complete</h3>
-                <p>
-                    Resume text was extracted and scored against the job description.
-                </p>
+        <section class="analysis-card" aria-labelledby="analysis-title">
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">START HERE</span>
+                    <h2 id="analysis-title">Analyze your resume</h2>
+                </div>
+                <span class="step-label">1 of 1</span>
             </div>
 
-            <h2>Scores</h2>
+            <form action="/upload-resume" method="POST" enctype="multipart/form-data" id="analysisForm" novalidate>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="resume">Resume</label>
+                        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="resumeHelp">
+                            <input
+                                type="file"
+                                id="resume"
+                                name="resume"
+                                accept=".pdf,.docx"
+                                required
+                                hidden
+                            >
+                            <div class="dropzone-icon" aria-hidden="true">↑</div>
+                            <div class="dropzone-content">
+                                <strong id="fileName">Drop your resume here</strong>
+                                <span>or click to choose a PDF or DOCX file</span>
+                            </div>
+                            <button type="button" class="secondary-button" id="browseButton">Choose file</button>
+                        </div>
+                        <p class="field-help" id="resumeHelp">Maximum file size: 5 MB.</p>
+                        <p class="field-error" id="resumeError" role="alert"></p>
+                    </div>
 
-            <div class="score-cards">
-                {% set ats = analysis.ats_score.score %}
-
-                <div class="score-card {% if ats >= 70 %}score-good{% elif ats >= 40 %}score-medium{% else %}score-low{% endif %}">
-                    <div class="score-value">{{ ats }}</div>
-                    <div class="score-label">
-                        ATS Compatibility Score
+                    <div class="form-field">
+                        <div class="label-row">
+                            <label for="job_description">Job description</label>
+                            <span id="charCount" class="char-count">0 / 100 minimum</span>
+                        </div>
+                        <textarea
+                            id="job_description"
+                            name="job_description"
+                            minlength="100"
+                            required
+                            placeholder="Paste the complete job description here. Include responsibilities, skills, qualifications, tools, technologies, and experience requirements."
+                        >{{ job_description|default("") }}</textarea>
+                        <div class="textarea-footer">
+                            <p class="field-help">A detailed JD produces a more useful comparison.</p>
+                            <span id="jdStatus" class="input-status">Needs more detail</span>
+                        </div>
+                        <p class="field-error" id="jdError" role="alert"></p>
                     </div>
                 </div>
 
-                {% set match = analysis.match_score.match_percent %}
-
-                <div class="score-card {% if match >= 70 %}score-good{% elif match >= 40 %}score-medium{% else %}score-low{% endif %}">
-                    <div class="score-value">{{ match }}%</div>
-                    <div class="score-label">
-                        Resume-to-JD Match
+                <div class="form-actions">
+                    <div>
+                        <strong>Ready when you are.</strong>
+                        <p>HireLens will parse, score, match, and prepare your insights.</p>
                     </div>
+                    <button type="submit" class="primary-button" id="submitButton">
+                        <span class="button-label">Analyze My Resume</span>
+                        <span class="button-spinner" aria-hidden="true"></span>
+                        <span aria-hidden="true">→</span>
+                    </button>
                 </div>
+            </form>
+        </section>
 
-                <div class="score-card {% if analysis.missing_skills.total_missing == 0 %}score-good{% elif analysis.missing_skills.total_missing <= 4 %}score-medium{% else %}score-low{% endif %}">
-                    <div class="score-value">
-                        {{ analysis.missing_skills.total_missing }}
-                    </div>
-
-                    <div class="score-label">
-                        Missing Skills Detected
-                    </div>
-                </div>
-            </div>
-
-            <h2>ATS Score Breakdown</h2>
-
-            <table class="breakdown-table">
-                <thead>
-                    <tr>
-                        <th>Factor</th>
-                        <th>Points</th>
-                        <th>Note</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for item in analysis.ats_score.breakdown %}
-                        <tr>
-                            <td>{{ item.factor }}</td>
-                            <td>
-                                {{ item.points }} / {{ item.max_points }}
-                            </td>
-                            <td>{{ item.note }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <h2>Missing Skills by Category</h2>
-
-            {% if analysis.missing_skills.missing_by_category %}
-                {% for category, skills in analysis.missing_skills.missing_by_category.items() %}
-                    <div class="missing-category">
-                        <h4>{{ category.replace("_", " ") }}</h4>
-
-                        <ul class="keyword-list">
-                            {% for skill in skills %}
-                                <li class="missing">
-                                    {{ skill }}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p class="no-keywords">
-                    No missing skills detected — the resume covers every
-                    dictionary skill found in the job description.
-                </p>
-            {% endif %}
-
-            <div class="keyword-section">
-                <h2>Matched Keywords</h2>
-
-                {% if analysis.match_score.matched_keywords %}
-                    <ul class="keyword-list">
-                        {% for keyword in analysis.match_score.matched_keywords %}
-                            <li class="matched">
-                                {{ keyword }}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="no-keywords">
-                        No matched keywords found between resume and job description.
-                    </p>
-                {% endif %}
-            </div>
-
-            <div class="keyword-section">
-                <h2>Extracted Resume Keywords</h2>
-
-                {% if analysis.keyword_analysis.resume_keywords %}
-                    <ul class="keyword-list">
-                        {% for keyword in analysis.keyword_analysis.resume_keywords %}
-                            <li>{{ keyword }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="no-keywords">
-                        No dictionary skills were detected in the resume.
-                    </p>
-                {% endif %}
-            </div>
-
-            <div class="keyword-section">
-                <h2>Extracted Job Description Keywords</h2>
-
-                {% if analysis.keyword_analysis.jd_keywords %}
-                    <ul class="keyword-list">
-                        {% for keyword in analysis.keyword_analysis.jd_keywords %}
-                            <li>{{ keyword }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="no-keywords">
-                        No dictionary skills were detected in the job description.
-                    </p>
-                {% endif %}
-            </div>
-
-            <h2>Extracted Resume Text</h2>
-
-            <pre>{{ extracted_text }}</pre>
-
-            <!-- Day 6: AI Suggestions -->
-
-            <section class="ai-suggestions">
-                <h2>AI-Powered Improvement Suggestions</h2>
-
-                {% if ai_suggestions and ai_suggestions.error %}
-                    <div class="error">
-                        <h3>AI Suggestions Unavailable</h3>
-
-                        <p>
-                            {{ ai_suggestions.error }}
-                        </p>
-
-                        <p>
-                            Your resume parsing and rule-based scoring
-                            results are still available above.
-                        </p>
-                    </div>
-
-                {% elif ai_suggestions %}
-
-                    <p class="ai-intro">
-                        These suggestions are based on your resume,
-                        job description, and HireLens rule-based analysis.
-                    </p>
-
-                    <div class="suggestion-block">
-                        <h3>Overall Feedback</h3>
-
-                        <p>
-                            {{ ai_suggestions.overall_feedback }}
-                        </p>
-                    </div>
-
-                    <div class="suggestion-block">
-                        <h3>Strengths</h3>
-
-                        {% if ai_suggestions.strengths %}
-                            <ul>
-                                {% for strength in ai_suggestions.strengths %}
-                                    <li>{{ strength }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="no-keywords">
-                                No specific strengths were returned.
-                            </p>
-                        {% endif %}
-                    </div>
-
-                    <div class="suggestion-block">
-                        <h3>Priority Improvements</h3>
-
-                        {% if ai_suggestions.priority_improvements %}
-
-                            {% for improvement in ai_suggestions.priority_improvements %}
-                                <div class="improvement-card">
-
-                                    <h4>
-                                        {{ improvement.area }}
-                                    </h4>
-
-                                    <p>
-                                        <strong>Suggestion:</strong>
-                                        {{ improvement.suggestion }}
-                                    </p>
-
-                                    <p>
-                                        <strong>Example:</strong>
-                                        {{ improvement.example }}
-                                    </p>
-
-                                </div>
-                            {% endfor %}
-
-                        {% else %}
-                            <p class="no-keywords">
-                                No priority improvements were returned.
-                            </p>
-                        {% endif %}
-                    </div>
-
-                    <div class="suggestion-block">
-                        <h3>Skills to Highlight</h3>
-
-                        {% if ai_suggestions.skills_to_highlight %}
-
-                            <ul class="keyword-list">
-                                {% for skill in ai_suggestions.skills_to_highlight %}
-                                    <li class="matched">
-                                        {{ skill }}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-
-                        {% else %}
-                            <p class="no-keywords">
-                                No additional skills were highlighted.
-                            </p>
-                        {% endif %}
-                    </div>
-
-                    <div class="suggestion-block">
-                        <h3>Tone Notes</h3>
-
-                        <p>
-                            {{ ai_suggestions.tone_notes }}
-                        </p>
-                    </div>
-
-                {% else %}
-
-                    <div class="error">
-                        <h3>AI Suggestions Unavailable</h3>
-
-                        <p>
-                            AI suggestions temporarily unavailable.
-                        </p>
-
-                        <p>
-                            Your resume parsing and rule-based scoring
-                            results are still available above.
-                        </p>
-                    </div>
-
-                {% endif %}
-            </section>
-
-        {% endif %}
+        <section class="feature-grid" aria-label="HireLens capabilities">
+            <article class="feature-card">
+                <span class="feature-number">01</span>
+                <h3>ATS compatibility</h3>
+                <p>See how closely your resume aligns with common screening factors.</p>
+            </article>
+            <article class="feature-card">
+                <span class="feature-number">02</span>
+                <h3>Skill gaps</h3>
+                <p>Find important job-description skills that are missing from your resume.</p>
+            </article>
+            <article class="feature-card">
+                <span class="feature-number">03</span>
+                <h3>Actionable insights</h3>
+                <p>Use keyword and AI-powered suggestions to decide what to improve next.</p>
+            </article>
+        </section>
     </main>
 
-    <footer class="app-footer">
-        Built with Claude as part of the AB Talks 60-Day Claude AI Challenge.
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <span>HireLens</span>
+            <span>Built as part of the AB Talks 60-Day Claude AI Challenge.</span>
+        </div>
     </footer>
 
-    <script>
-        const form = document.getElementById("analysisForm");
-        const jobDescription = document.getElementById("job_description");
-        const jdError = document.getElementById("jdError");
+    <div class="loading-overlay" id="loadingOverlay" hidden aria-live="polite" aria-busy="true">
+        <div class="loading-card">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <span class="eyebrow">ANALYZING</span>
+            <h2>Preparing your resume insights</h2>
+            <p>HireLens is parsing your resume, comparing it with the job description, and preparing your results.</p>
+            <span class="loading-note">This can take a few seconds.</span>
+        </div>
+    </div>
 
-        form.addEventListener("submit", function (event) {
-            const text = jobDescription.value.trim();
-
-            if (text.length < 100) {
-                event.preventDefault();
-
-                jdError.style.display = "block";
-                jobDescription.focus();
-
-                return;
-            }
-
-            jdError.style.display = "none";
-        });
-
-        jobDescription.addEventListener("input", function () {
-            const text = jobDescription.value.trim();
-
-            if (text.length >= 100) {
-                jdError.style.display = "none";
-            }
-        });
-    </script>
-
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </body>
 </html>
