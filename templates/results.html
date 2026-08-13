@@ -29,10 +29,12 @@
                 <p>Here is how your resume currently aligns with the target role, plus the gaps worth addressing first.</p>
             </div>
             <div class="hero-actions">
-                <button class="secondary-button" type="button" disabled title="PDF report generation is scheduled for Day 8">
-                    Download report
-                    <span class="coming-soon">Day 8</span>
-                </button>
+                <form method="POST" action="{{ url_for('download_report') }}">
+                    <button class="secondary-button" type="submit">
+                        Download report
+                        <span class="coming-soon">Day 8</span>
+                    </button>
+                </form>
             </div>
         </section>
 
@@ -59,7 +61,7 @@
                 <div class="large-metric">{{ match }}<span>%</span></div>
                 <span class="metric-label">Resume-to-JD match</span>
                 <div class="progress-track" aria-label="{{ match }} percent match">
-                    <span class="{% if match >= 70 %}progress-good{% elif match >= 40 %}progress-medium{% else %}progress-low{% endif %}" style="width: {{ match }}%"></span>
+                    <span class="{% if match >= 70 %}progress-good{% elif match >= 40 %}progress-medium{% else %}progress-low{% endif %}" style="width: 72%"></span>
                 </div>
                 <p class="metric-description">{% if match >= 70 %}Strong keyword and skill alignment.{% elif match >= 40 %}A workable match with room to improve.{% else %}Several role-specific gaps should be addressed.{% endif %}</p>
             </article>
@@ -308,10 +310,12 @@
         <section class="next-step-card">
             <div>
                 <span class="eyebrow">NEXT STEP</span>
-                <h2>Turn these insights into a stronger application.</h2>
-                <p>PDF report generation is planned for Day 8. Today's dashboard keeps the full analysis ready for that next step.</p>
+                <h2>Download your complete HireLens report.</h2>
+                <p>Save your ATS score, job match analysis, missing skills, keywords, and AI recommendations as a PDF.</p>
             </div>
-            <button class="secondary-button" type="button" disabled>Download report · Day 8</button>
+            <form method="POST" action="{{ url_for('download_report') }}">
+                <button class="secondary-button" type="submit">Download report · Day 8</button>
+            </form>
         </section>
     </main>
 

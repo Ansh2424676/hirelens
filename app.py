@@ -1,20 +1,63 @@
+import os
+from io import BytesIO
 from pathlib import Path
 import tempfile
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
+from flask import (
+    Flask,
+    render_template,
+    request,
+    send_file,
+    session,
+)
 
 from ai_service.claude_provider import ClaudeProvider
 from parsing import parse_resume
+from report.pdf_generator import generate_pdf_report
 from scoring.engine import analyze
+
 
 load_dotenv()
 
+
 app = Flask(__name__)
+
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
-ALLOWED_EXTENSIONS = {".pdf", ".docx"}
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is not set. "
+        "Add SECRET_KEY to your .env file "
+        "(see .env.example) before starting the application. "
+        "A hardcoded fallback is not permitted."
+    )
+
+app.secret_key = SECRET_KEY
+
+
+ALLOWED_EXTENSIONS = {
+    ".pdf",
+    ".docx",
+}
+
 MIN_JD_LENGTH = 100
+
+REPORT_DOWNLOAD_NAME = "HireLens_Report.pdf"
+
+REPORT_UNAVAILABLE_MESSAGE = (
+    "We couldn't find a recent analysis to build a report from. "
+    "Please analyze a resume first, then try downloading the "
+    "report again."
+)
+
+REPORT_GENERATION_FAILED_MESSAGE = (
+    "Something went wrong while generating your PDF report. "
+    "Please try analyzing your resume again."
+)
 
 
 @app.route("/")
@@ -30,6 +73,7 @@ def health():
 @app.route("/upload-resume", methods=["POST"])
 def upload_resume():
     uploaded_file = request.files.get("resume")
+
     job_description = request.form.get(
         "job_description",
         "",
@@ -59,7 +103,9 @@ def upload_resume():
             job_description=job_description,
         )
 
-    extension = Path(uploaded_file.filename).suffix.lower()
+    extension = Path(
+        uploaded_file.filename
+    ).suffix.lower()
 
     if extension not in ALLOWED_EXTENSIONS:
         return render_template(
@@ -104,11 +150,19 @@ def upload_resume():
 
     claude_provider = ClaudeProvider()
 
-    ai_suggestions = claude_provider.generate_suggestions(
-        resume_text=resume_text,
-        jd_text=job_description,
-        analysis=analysis,
+    ai_suggestions = (
+        claude_provider.generate_suggestions(
+            resume_text=resume_text,
+            jd_text=job_description,
+            analysis=analysis,
+        )
     )
+
+    # Store only the data required for PDF generation.
+    # Raw resume text and job description are intentionally
+    # excluded to keep the signed session cookie small.
+    session["analysis"] = analysis
+    session["ai_suggestions"] = ai_suggestions
 
     return render_template(
         "results.html",
@@ -116,6 +170,78 @@ def upload_resume():
         analysis=analysis,
         ai_suggestions=ai_suggestions,
         job_description=job_description,
+    )
+
+
+@app.route(
+    "/download-report",
+    methods=["POST"],
+)
+def download_report():
+    analysis = session.get("analysis")
+    ai_suggestions = session.get(
+        "ai_suggestions"
+    )
+
+    # A valid analysis is required.
+    if not isinstance(analysis, dict) or not analysis:
+        return render_template(
+            "index.html",
+            error=REPORT_UNAVAILABLE_MESSAGE,
+        ), 400
+
+    # AI suggestions are optional because the application
+    # supports the AI fallback case. If present, they must
+    # be a dictionary.
+    if (
+        ai_suggestions is not None
+        and not isinstance(
+            ai_suggestions,
+            dict,
+        )
+    ):
+        return render_template(
+            "index.html",
+            error=REPORT_UNAVAILABLE_MESSAGE,
+        ), 400
+
+    try:
+        pdf_bytes = generate_pdf_report(
+            analysis,
+            ai_suggestions or {},
+        )
+    except Exception:
+        # Log technical details server-side without exposing
+        # internal exceptions or tracebacks to the user.
+        app.logger.exception(
+            "PDF report generation failed."
+        )
+
+        return render_template(
+            "index.html",
+            error=REPORT_GENERATION_FAILED_MESSAGE,
+        ), 400
+
+    # Protect the download endpoint from an invalid
+    # or empty PDF generator response.
+    if (
+        not isinstance(pdf_bytes, bytes)
+        or not pdf_bytes
+    ):
+        app.logger.error(
+            "PDF generator returned invalid or empty data."
+        )
+
+        return render_template(
+            "index.html",
+            error=REPORT_GENERATION_FAILED_MESSAGE,
+        ), 400
+
+    return send_file(
+        BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=REPORT_DOWNLOAD_NAME,
     )
 
 
@@ -131,4 +257,19 @@ def file_too_large(_error):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        host="127.0.0.1",
+        port=int(
+            os.environ.get(
+                "PORT",
+                "5000",
+            )
+        ),
+        debug=(
+            os.environ.get(
+                "FLASK_DEBUG",
+                "",
+            ).lower()
+            == "true"
+        ),
+    )
