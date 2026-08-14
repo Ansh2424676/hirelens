@@ -1,14 +1,15 @@
 """
 scoring/skills_dictionary.py
 
-Static, maintainable database of skills/keywords relevant to Indian IT and
-software job postings. Used by scoring/keyword_extractor.py (Day 4, next
-milestone) to detect which skills appear in resume text and job description
-text.
+Static, maintainable database of skills/keywords relevant to Indian IT,
+software, data, design, and business job postings.
+
+Used by scoring/keyword_extractor.py to detect which skills appear in
+resume text and job description text.
 
 This module has NO external dependencies and NO I/O — it is a pure data file.
 All terms are lowercase, matching the normalization convention used by the
-keyword extractor (which lowercases input text before comparison).
+keyword extractor.
 
 To add a new skill: add it to the correct category list below, in lowercase.
 Avoid duplicate terms across categories.
@@ -75,5 +76,32 @@ SKILLS_DB = {
         "sap", "salesforce", "servicenow", "jira", "confluence", "agile",
         "scrum", "sdlc", "itil", "erp", "crm", "ms office", "sharepoint",
         "active directory",
+    ],
+
+    "design_tools": [
+        "photoshop",
+        "illustrator",
+        "indesign",
+        "figma",
+        "adobe xd",
+        "canva",
+    ],
+
+    "design_skills": [
+        "graphic design",
+        "ui/ux design",
+        "ui design",
+        "ux design",
+        "typography",
+        "color theory",
+        "visual communication",
+        "branding",
+        "illustration",
+        "image editing",
+        "responsive web design",
+        "digital marketing",
+        "design systems",
+        "wireframing",
+        "prototyping",
     ],
 }
